@@ -46,7 +46,7 @@ def train_and_evaluate(train_loader, test_loader, dimension_num, num_classes, ex
     optimizer = torch.optim.Adadelta(fcn_model.parameters(), lr=1e-3, eps=1e-8)
     model_classifier = TimeSeriesClassifier(model=fcn_model, optimizer=optimizer)
     wandb_logger = WandbLogger(log_model="all", project="FCN")
-    checkpoint_callback = ModelCheckpoint(dirpath="experiments", filename=f"fcn_kan_{experiment}", save_top_k=1, monitor="f1", mode="max")
+    checkpoint_callback = ModelCheckpoint(dirpath="experiments", filename=f"fcn_{experiment}", save_top_k=1, monitor="f1", mode="max")
     trainer = Trainer(max_epochs=MAX_EPOCHS, accelerator="gpu", devices=-1, callbacks=[checkpoint_callback], logger=wandb_logger, enable_model_summary=False)
     trainer.fit(model_classifier, train_loader)
     results = trainer.test(model_classifier, test_loader)

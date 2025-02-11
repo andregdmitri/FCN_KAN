@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.optim as optim
 from torch.utils.data import Dataset
 from torch.nn import functional as F
 from pytorch_lightning import LightningModule
@@ -8,7 +7,6 @@ from torch.utils.data import Dataset
 from sklearn.metrics import f1_score, accuracy_score
 import pandas as pd
 import numpy as np
-from tsfresh.utilities.dataframe_functions import impute
 
 class TimeSeriesClassifier(LightningModule):
     def __init__(self, model, optimizer):
@@ -93,59 +91,6 @@ class TimeSeriesDataset(Dataset):
 
     def __getitem__(self, index):
         return torch.Tensor(self.X[index]), torch.tensor(self.y_mapped[index], dtype=torch.long)
-    
-    
-# TSFresh feature extraction requires the data to be in a specific format
-def prepare_tsfresh_data(X):
-    """
-    Prepare time series data for TSFresh feature extraction.
-    
-    Parameters:
-    - X: 3D numpy array of shape (n_instances, n_timepoints, 1)
-    
-    Returns:
-    - DataFrame suitable for TSFresh feature extraction.
-    """
-    n_instances, n_timepoints, _ = X.shape
-    df_list = []
-    for i in range(n_instances):
-        instance = X[i, :, 0]  # Flatten the time series instance
-        instance_df = pd.DataFrame({
-            'id': [i] * n_timepoints,
-            'time': np.arange(n_timepoints),
-            'value': instance
-        })
-        df_list.append(instance_df)
-    return pd.concat(df_list)
-
-# Function to handle NaNs and zero vectors
-def clean_data(X_features, y_labels):
-    """
-    Cleans the extracted features by:
-    1. Imputing NaN values.
-    2. Removing rows with all zero values.
-    
-    Parameters:
-    - X_features: DataFrame of extracted features.
-    - y_labels: Corresponding labels to be cleaned.
-    
-    Returns:
-    - Cleaned feature matrix and labels.
-    """
-    # Impute missing values (NaN)
-    X_features = impute(X_features)
-    
-    # Check if there are still any NaN values after imputation
-    if X_features.isnull().values.any():
-        print("Warning: There are still NaN values after imputation.")
-    
-    # Remove instances with all zero values (rows where all features are 0)
-    non_zero_indices = (X_features != 0).any(axis=1)
-    X_features_cleaned = X_features[non_zero_indices]
-    y_labels_cleaned = y_labels[non_zero_indices]
-    
-    return X_features_cleaned, y_labels_cleaned
-
 
 def accuracy(model, dataset):
     train_pred = torch.argmax(model(dataset['train_input']), dim=1)

@@ -44,8 +44,9 @@ def train_kan(train_input, train_label, test_input, test_label, n_timepoints, n_
     
     results_list = []
     for exp in range(NUM_EXPERIMENTS):
-        model = KAN(ckpt_path='./kan_results', width=[[n_timepoints, 0], [50, 0], [30, 0], [n_classes, 0]],
-                    grid=5, k=3, seed=42, device=dev)
+        # model = KAN(ckpt_path='./kan_results', width=[[n_timepoints, 0], [50, 0], [30, 0], [n_classes, 0]],
+        #             grid=5, k=3, seed=42, device=dev)
+        model = KAN(ckpt_path='./kan_results', width=[128, 5, n_classes], grid=5, k=3, seed=42, device=dev)
         results = model.fit(dataset, steps=STEPS, metrics=(train_acc, test_acc), loss_fn=torch.nn.CrossEntropyLoss(), log=1)
         results_list.append({"experiment": exp, "train_loss": results["train_loss"][-1].item(), 
                              "test_loss": results["test_loss"][-1].item(), "train_acc": results["train_acc"][-1], 
